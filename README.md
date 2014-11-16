@@ -24,8 +24,8 @@ to customize the payment user interface.
 
 ###### Setup
 ```javascript
-
-var PesaPal = require('pesapaljs').init({
+var PesaPal = require('pesapaljs');
+var pesapal = new PesaPal({
     key: CONSUMER_KEY,
     secret: CONSUMER_SECRET,
     debug: true
@@ -38,7 +38,7 @@ When the `debug` option is set, `pesapaljs` will use the `demo.pesapal.com/*` en
 ```javascript
 
 // Listen for IPNs (With an express app)
-app.get('/ipn', PesaPal.paymentListener, function(req, res) { 
+app.get('/ipn', pesapal.paymentListener, function(req, res) {
     var payment = req.payment;
     // do shit with payment {transaction, method, status, reference}
     
@@ -54,11 +54,11 @@ var options = {
     reference: "42314123", // Send this
     transaction: "175c6485-0948-4cb9-8d72-05a2c3f25be5" // or both.
 };
-PesaPal.paymentStatus(options, function(error, status}{
+pesapal.paymentStatus(options, function(error, status}{
     // do shit
 });
 
-PesaPal.paymentDetails(options, function (error, payment) {
+pesapal.paymentDetails(options, function (error, payment) {
     //payment -> {transaction, method, status, reference}
     //do shit
 });
@@ -74,7 +74,7 @@ var customer = new PesaPal.Customer("kariuki@pesapal.com");
 var order = new PesaPal.Order("42314123", customer, "Ma ndazi", 1679.50, "KES", "MERCHANT");
 
 // Redirect user to PesaPal
-var url = PesaPal.getPaymentURL(order, "http://mysite.co.ke/callback");
+var url = pesapal.getPaymentURL(order, "http://mysite.co.ke/callback");
 // send it to an iframe ?
 
 ```
@@ -92,7 +92,7 @@ PesaPal.makeOrder(order, PesaPal.PaymentMethod.Airtel, function(error, order) {
     
     // ...
     
-    PesaPal.payOrder(order, new PesaPal.MobileMoney("254728988983","DEWEDWED"), function (error, reference, transactionId) {
+    pesapal.payOrder(order, new PesaPal.MobileMoney("254728988983","DEWEDWED"), function (error, reference, transactionId) {
         // do shit
     });
 });

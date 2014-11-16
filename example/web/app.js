@@ -15,26 +15,23 @@ var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var api = require('./api');
 var db = require("./database");
-var PesaPal = require('../../lib/pesapal').init({
-    debug: true,
-    key: "cq4aoP7ROjqsosMYrP2Btftbm4TzHLoK",
-    secret: "O6SQHlUHbIEhINtyUJxRTkCdqvw="
-});
+var PesaPal = require('../../lib/pesapal');
 
+var pesapal = new PesaPal({ debug: true, key: "cq4aoP7ROjqsosMYrP2Btftbm4TzHLoK", secret: "O6SQHlUHbIEhINtyUJxRTkCdqvw=" });
 var app = express();
-app.use(morgan('dev'));
 
 app.set('views', __dirname + '/view');
 app.set('view engine', 'jade');
 
+app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // Serve our android app
-api(app, PesaPal);
+api(app, pesapal);
 
 app.use("/static", express.static(__dirname + "/static"));
 
-app.get('/payment_listener', PesaPal.paymentListener, function (req) {
+app.get('/payment_listener', pesapal.paymentListener, function (req) {
     var payment = req.payment;
     if (payment) {
         // TODO: Save in DB?
@@ -43,11 +40,11 @@ app.get('/payment_listener', PesaPal.paymentListener, function (req) {
 
 app.get('/payment_callback', function (req, res) {
     var options = { // Assumes pesapal calls back with a transaction id and reference
-        transaction: req.query[PesaPal.getQueryKey('transaction')],
-        reference: req.query[PesaPal.getQueryKey('reference')]
+        transaction: req.query[PesaPal.Utils.getQueryKey('transaction')],
+        reference: req.query[PesaPal.Utils.getQueryKey('reference')]
     };
 
-    PesaPal.paymentDetails(options, function (error, payment) {
+    pesapal.paymentDetails(options, function (error, payment) {
         res.send({error: error, payment: payment});
     });
 });
@@ -77,7 +74,7 @@ app.post('/checkout', function (req, res, next) {
 
     if(req.body.pesapal) { // Redirect to PesaPal for payment
 
-        var paymentURI = PesaPal.getPaymentURL(order, "http://localhost:3000/payment_callback");
+        var paymentURI = pesapal.getPaymentURL(order, "http://localhost:3000/payment_callback");
         res.redirect(paymentURI);
 
     } else { // Use Custom Payment Page
@@ -85,7 +82,7 @@ app.post('/checkout', function (req, res, next) {
         var mobilePayment = req.body.mobile != undefined;
         var method = mobilePayment ? PesaPal.PaymentMethod.MPesa : PesaPal.PaymentMethod.Visa;
 
-        PesaPal.makeOrder(order, method, function (error, order) {
+        pesapal.makeOrder(order, method, function (error, order) {
 
             if(error) {
                 res.send(error.message);
@@ -152,7 +149,7 @@ app.post('/pay', function (req, res, next) {
     }
 
     if(paymentData != null) {
-        PesaPal.payOrder(order, paymentData, callback);
+        pesapal.payOrder(order, paymentData, callback);
     } else {
         res.render("message", {message: "Error!!!"});
     }

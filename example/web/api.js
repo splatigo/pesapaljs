@@ -11,8 +11,9 @@
  *
  */
 var db = require("./database");
+var PesaPal = require('../../lib/pesapal');
 
-exports = module.exports = function (app, PesaPal) {
+exports = module.exports = function (app, pesapal) {
 
     var readOrder = function (req) {
         // TODO: Make order from request;
@@ -35,7 +36,7 @@ exports = module.exports = function (app, PesaPal) {
         if(req.query.reference) options.reference = req.query.reference;
         if(req.query.transaction) options.transaction = req.query.transaction;
 
-        PesaPal.paymentStatus(options, function(error, status) {
+        pesapal.paymentStatus(options, function(error, status) {
             if(error) {
                 res.status(500).send(error);
             } else {
@@ -50,7 +51,7 @@ exports = module.exports = function (app, PesaPal) {
         if(req.query.transaction) options.transaction = req.query.transaction;
 
 
-        PesaPal.paymentDetails(options, function (error, payment) {
+        pesapal.paymentDetails(options, function (error, payment) {
             if(error) {
                 res.status(500).send(error);
             } else {
@@ -81,7 +82,7 @@ exports = module.exports = function (app, PesaPal) {
                 return;
         }
 
-        PesaPal.makeOrder(order, method, function (error, order) {
+        pesapal.makeOrder(order, method, function (error, order) {
             // Save order
             db.saveOrder(order);
 
@@ -123,7 +124,7 @@ exports = module.exports = function (app, PesaPal) {
         }
 
         if(paymentData != null) {
-            PesaPal.payOrder(order, paymentData, function (error, reference, transactionId) {
+            pesapal.payOrder(order, paymentData, function (error, reference, transactionId) {
                 if(error) {
                     res.status(500).send(error.message);
                 } else {
@@ -138,7 +139,7 @@ exports = module.exports = function (app, PesaPal) {
 
     app.post('/payment_url', function (req, res) {
         var order = readOrder(req);
-        var paymentURI = PesaPal.getPaymentURL(order, req.body.callback);
+        var paymentURI = pesapal.getPaymentURL(order, req.body.callback);
         res.send({url:paymentURI});
     });
 
