@@ -6,6 +6,7 @@
 
 Make it easy to integrate [PesaPal](https://www.pesapal.com) into a website or mobile app AND most importantly allow one
 to customize the payment user interface.
+Support for Ugandan Networks- MTN and Airtel
 
 ### Core Features
 - `paymentListener`: `express` middleware that parses IPNs.
@@ -19,6 +20,7 @@ to customize the payment user interface.
 - `makeOrder(order, paymentMethod, callback)`: Prepare an order for payment on a custom UI.
 
 - `payOrder(order, paymentDetails, callback)`: After a call to `makeOrder`, pay an order with details collected through a custom UI.
+
 
 ### Usage summary
 
@@ -71,7 +73,10 @@ Make your customer pay on PesaPal's page:
 ```javascript
 
 var customer = new PesaPal.Customer("kariuki@pesapal.com");
-var order = new PesaPal.Order("42314123", customer, "Ma ndazi", 1679.50, "KES", "MERCHANT");
+
+
+
+var order = new PesaPal.Order("42314123", customer, "Pizza", 3000, "UGX", "MERCHANT");
 
 // Redirect user to PesaPal
 var url = PesaPal.getPaymentURL(order, "http://mysite.co.ke/callback");
@@ -82,17 +87,22 @@ var url = PesaPal.getPaymentURL(order, "http://mysite.co.ke/callback");
 Or make your own awesome payment UI (web page, mobile app front-end, etc.):
 
 ```javascript
-
+var contact="0785967798";
 var customer = new PesaPal.Customer("john@pesapal.com");
-var order = new PesaPal.Order("WSDE0RFCC", customer, "Maziwa", 100, "KES", "MERCHANT");
+var telnet=PesaPal.PaymentMethod.MTN_UG;
+//var telnet=PesaPal.PaymentMethod.Airtel_UG;
+
+
+
+var order = new PesaPal.Order("WSDE0RFCC", customer, "Malakwang", 5000, "UGX", "MERCHANT");
 
 // place order directly with your own UI
-PesaPal.makeOrder(order, PesaPal.PaymentMethod.Airtel, function(error, order) {
+PesaPal.makeOrder(order, telnet, function(error, order) {
     // Get payment details from user, DB - like their credit card info ;) or whatever
     
     // ...
     
-    PesaPal.payOrder(order, new PesaPal.MobileMoney("254728988983","DEWEDWED"), function (error, reference, transactionId) {
+    PesaPal.payOrder(order, new PesaPal.MobileMoney(contact,"2200"), function (error, reference, transactionId) {
         // do shit
     });
 });
